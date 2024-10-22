@@ -7,4 +7,5 @@ function setup()
     svmModel = SVMModel(support_vectors, intercept, dual_coefficients);
 
     disp("Model load successfully")
+    
 end
