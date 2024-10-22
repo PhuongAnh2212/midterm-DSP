@@ -38,17 +38,17 @@ disp(['Size of Dual Coefficients: ', num2str(size(svmModel.DualCoefficients))]);
 
 % Make prediction using the SVM model
 predictedIndex = svmModel.predict(features);
-disp(class(svmModel));
 
-% Define the emotion labels (Make sure the number matches the number of classes in your model)
+disp(class(svmModel));
+% Define the emotion labels (make sure the number of labels matches the number of classes)
 emotion_labels = {'angry', 'disgust', 'fearful', 'happy', 'neutral', 'sad', 'surprised'};
 
-% Check if the predicted index is valid and map to the corresponding emotion label
+% Ensure that predictedIndex falls within the valid range
 if predictedIndex > 0 && predictedIndex <= length(emotion_labels)
     predictedLabel = emotion_labels{predictedIndex};  % Get the corresponding emotion label
 else
     error('Invalid predicted index: %d', predictedIndex);
 end
 
-% Display the predicted emotion
+% Now you can use the predictedLabel for further processing or display
 disp(['Predicted emotion: ', predictedLabel]);

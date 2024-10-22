@@ -32,15 +32,17 @@ classdef SVMModel
             if size(x, 2) ~= size(obj.SupportVectors, 2)
                 error('Feature size does not match the number of support vectors features.');
             end
-            
+        
             % Calculate decision value for each class
-            decisionValue = (x * obj.SupportVectors') * obj.DualCoefficients;  % Decision values for all classes
+            decisionValue = (x * obj.SupportVectors') * obj.DualCoefficients';  % Transpose DualCoefficients
             
             % Add intercept for each class (broadcasting)
             decisionValue = decisionValue + obj.Intercept;  % Add intercept (should be a vector)
             
             % Get the predicted class based on the max decision value
             [~, predictedIndex] = max(decisionValue, [], 2);  % Take the index of the max value along the row
+
+            label = predictedIndex;
         end
     end
 end
