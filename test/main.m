@@ -1,6 +1,7 @@
 dataFolder = "/Users/phamdoanphuonganh/Desktop/midterm-dsp/midterm-DSP/test";
 dataset = fullfile(dataFolder, "Emo-DB");
 
+
 % Check if the dataset already exists (use 'exist' instead of 'datasetExists')
 if ~exist(dataset, 'dir')  % 'dir' checks if it's a directory
     url = "http://emodb.bilderbar.info/download/download.zip";
@@ -12,11 +13,27 @@ else
     disp("Dataset already exists.")
 end
 
+ads = audioDatastore(fullfile(dataset,"wav"));
+
+filepaths = ads.Files;
+emotionCodes = cellfun(@(x)x(end-5),filepaths,UniformOutput=false);
+emotions = replace(emotionCodes,["W","L","E","A","F","T","N"], ...
+    ["Anger","Boredom","Disgust","Anxiety/Fear","Happiness","Sadness","Neutral"]);
+
+speakerCodes = cellfun(@(x)x(end-10:end-9),filepaths,UniformOutput=false);
+labelTable = cell2table([speakerCodes,emotions],VariableNames=["Speaker","Emotion"]);
+labelTable.Emotion = categorical(labelTable.Emotion);
+labelTable.Speaker = categorical(labelTable.Speaker);
+summary(labelTable)
+ads.Labels = labelTable;
+
+
 % Load the pre-trained network
 downloadFolder = matlab.internal.examples.downloadSupportFile("audio/examples","serbilstm.zip");
 dataFolder = tempdir;  % Temporary directory for unzipping
 unzip(downloadFolder, dataFolder); % Unzip the model
 load(fullfile(dataFolder, "network_Audio_SER.mat")); % Load the network
+
 
 disp(class(net));  % Display the class of the loaded net
 
@@ -37,12 +54,21 @@ ads.Labels = labelTable;
 windowLength = 400;
 hammingWindow = 0.54 - 0.46 * cos(2 * pi * (0:windowLength-1)' / (windowLength-1));
 
-% Recreate the audioFeatureExtractor with the manually defined Hamming window
+numCoefficients = 23;  % Set to match network's expected input size
+
+% Example configuration to extract 40 features
 afe = audioFeatureExtractor( ...
-    'SampleRate', 16000, ...               % Adjust sample rate as needed
-    'Window', hammingWindow, ...           % Manually defined Hamming window
-    'OverlapLength', 200, ...              % Adjust overlap length
-    'mfcc', true);                         % Extract MFCC features (adjust as needed)
+    'SampleRate', 16000, ...
+    'Window', hamming(400, 'periodic'), ...
+    'OverlapLength', 200, ...
+    'mfcc', true, ...                     % Mel-frequency cepstral coefficients
+    'spectralCentroid', true, ...         % Spectral centroid
+    'spectralRolloff', true, ...          % Spectral rolloff
+    'spectralFlux', true, ...             % Spectral flux
+    'pitch', true);                       % Pitch features
+
+% This should total to 40 features when configured correctly.
+
 
 fs = afe.SampleRate;
 disp(fs);
@@ -57,6 +83,12 @@ sound(audio,fs)
 
 % Step 1: Extract features
 features = extract(afe, audio);
+disp(size(features));  % Check the size of extracted features
+
+% Ensure featureSequences is shaped correctly
+if size(features, 2) ~= 17  % Or the expected number of features
+    error('Feature sequences do not have the correct size.');
+end
 
 % Step 2: Define normalizers
 normalizers.Mean = mean(features, 1);
@@ -65,12 +97,16 @@ normalizers.StandardDeviation = std(features, 0, 1);
 % Step 3: Normalize features
 featuresNormalized = (features - normalizers.Mean) ./ normalizers.StandardDeviation;
 
-% Step 4: Prepare feature sequences
+% Ensure featuresNormalized has the correct shape
+disp(size(featuresNormalized));  % Check normalized features
+
+% Prepare feature sequences for the model
 numOverlap = 10;
 sequenceLength = 20;
-featureSequences = HelperFeatureVector2Sequence(featuresNormalized, sequenceLength, numOverlap); % Ensure this line works
+featureSequences = HelperFeatureVector2Sequence(featuresNormalized, sequenceLength, numOverlap);
+disp(size(featureSequences));  % Check the shape of feature sequences
 
-% Step 5: Predict using the network
+% Ensure the feature sequences have the expected channel dimension
 YPred = double(minibatchpredict(net, featureSequences));
 
 % Step 6: Aggregate predictions
