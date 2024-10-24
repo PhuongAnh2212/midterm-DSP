@@ -1,5 +1,5 @@
 % Get audio file info
-audioFile = '/Users/phamdoanphuonganh/Desktop/midterm-dsp/midterm-DSP/trainedfromColab/audio_data/sensorlog_20241022_180302.m4a'; % Update with your audio file path
+audioFile = '/Users/phamdoanphuonganh/Desktop/midterm-dsp/midterm-DSP/trainedfromColab/audio_data/OAF_bar_happy.wav'; % Update with your audio file path
 
 info = audioinfo(audioFile);
 disp('Audio File Information:');

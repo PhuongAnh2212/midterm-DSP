@@ -1,7 +1,7 @@
 global svmModel; 
 setup();
 
-audioFile = '/Users/phamdoanphuonganh/Desktop/midterm-dsp/midterm-DSP/trainedfromColab/audio_data/sensorlog_20241022_180302.m4a'; % Update with your audio file path
+audioFile = '/Users/phamdoanphuonganh/Desktop/midterm-dsp/midterm-DSP/trainedfromColab/audio_data/OAF_back_disgust.wav'; % Update with your audio file path
 % Get audio file info
 info = audioinfo(audioFile);
 disp('Audio File Information:');
@@ -37,7 +37,7 @@ disp(['Size of Support Vectors: ', num2str(size(svmModel.SupportVectors))]);
 disp(['Size of Dual Coefficients: ', num2str(size(svmModel.DualCoefficients))]);
 
 % Make prediction using the SVM model
-predictedIndex = svmModel.predict(features);
+[predictedIndex, decisionValue] = svmModel.predict(features);
 disp(class(svmModel));
 
 % Define the emotion labels (Make sure the number matches the number of classes in your model)
@@ -50,7 +50,10 @@ emotion_data = struct(...
     'sad', 'images/sad.jpeg', ...
     'surprised', 'images/surprise.png'...
 );
+
 % Check if the predicted index is valid and map to the corresponding emotion label
+emotion_labels = fieldnames(emotion_data);  % Get the emotion labels (the field names of the struct)
+
 if predictedIndex > 0 && predictedIndex <= length(emotion_labels)
     predictedLabel = emotion_labels{predictedIndex};  % Get the corresponding emotion label
 else
@@ -59,7 +62,16 @@ end
 
 % Display the predicted emotion
 disp(['Predicted emotion: ', predictedLabel]);
-predictedImagePath = emotion_data.(predictedLabel);
+predictedImagePath = emotion_data.(predictedLabel);  % Access the image path using the predicted label
 predictedImage = imread(predictedImagePath);  % Load the image for further use
 
+% Display the image
 imshow(predictedImage);
+
+% Plot the decision values (prediction scores for each emotion class)
+figure;
+bar(decisionValue);
+set(gca, 'XTickLabel', emotion_labels);
+title('Prediction Scores for Each Emotion Class');
+xlabel('Emotion');
+ylabel('Score');

@@ -23,7 +23,7 @@ classdef SVMModel
             obj.DualCoefficients = dual_coefficients;
         end
         
-        function label = predict(obj, x)
+        function [label, decisionValue] = predict(obj, x)
             if iscolumn(x)
                 x = x';  % Transpose to make sure it's a row vector
             end
