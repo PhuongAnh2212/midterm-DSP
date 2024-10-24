@@ -1,7 +1,7 @@
 setuptest();
 global svmModel;
 
-audioFile = '/Users/phamdoanphuonganh/Desktop/midterm-dsp/midterm-DSP/trainedfromColab/audio_data/NicoNicokneecut.m4a'; % Update with your audio file path
+audioFile = '/Users/phamdoanphuonganh/Desktop/midterm-dsp/midterm-DSP/trainedfromColab/audio_data/happyhappyhappy.mp3'; % Update with your audio file path
 
 info = audioinfo(audioFile);
 disp('Audio File Information:');
@@ -13,23 +13,42 @@ disp(['Sample rate: ', num2str(fs)]);
 audioLength = size(audioData, 1);
 disp(['Audio Length: ', num2str(audioLength)]);
 
-if audioLength < 1024
-    windowLength = audioLength; 
-else
-    windowLength = 1024; 
-end
+% if audioLength < 1024
+%     windowLength = audioLength; 
+% else
+%     windowLength = 1024; 
+% end
+% 
+% features = preprocessAudioData(audioData, fs, windowLength);
+% 
+% disp('Processed Audio Features:');
+% disp(features);
+% 
+% features = features(:)'; 
+% disp(['Size of features: ', num2str(size(features))]);
+% disp(['Size of Support Vectors: ', num2str(size(svmModel.SupportVectors))]);
+% disp(['Size of Dual Coefficients: ', num2str(size(svmModel.DualCoefficients))]);
 
+% [predictedIndex, decisionValue] = svmModel.predict(features);
+% disp(class(svmModel));
+
+% Define parameters for MFCC extraction
+windowSize = 20;  % Number of frames in each window
+hopSize = 10;     % Number of frames to skip between consecutive windows
+
+% Compute MFCC features for the entire audio signal
 features = preprocessAudioData(audioData, fs, windowLength);
 
-disp('Processed Audio Features:');
-disp(features);
+% Check the size of the features before proceeding
+disp(['Size of features after preprocessing: ', num2str(size(features))]);
 
-features = features(:)'; 
-disp(['Size of features: ', num2str(size(features))]);
-disp(['Size of Support Vectors: ', num2str(size(svmModel.SupportVectors))]);
-disp(['Size of Dual Coefficients: ', num2str(size(svmModel.DualCoefficients))]);
+% Make sure to handle features as needed
+finalFeatures = features(:)';
+disp(['Size of finalFeatures: ', num2str(size(finalFeatures))]);
 
-[predictedIndex, decisionValue] = svmModel.predict(features);
+
+% Make predictions using the SVM model
+[predictedIndex, decisionValue] = svmModel.predict(finalFeatures);
 disp(class(svmModel));
 
 disp('Raw Decision Values for Each Emotion Class:');
@@ -37,7 +56,7 @@ disp(decisionValue);
 
 emotion_data = struct(...
     'angry', 'images/angry.png', ...
-    'disgust', 'images/disgust.png', ...
+    'disgust', 'images/disgust.jpg', ...
     'fearful', 'images/anxiety.webp', ...
     'happy', 'images/joy.webp', ...
     'neutral', 'images/neutral.png', ...
@@ -53,7 +72,6 @@ if all(predictedIndex > 0) && all(predictedIndex <= length(emotion_labels))
 else
     error('Invalid predicted index: %d', predictedIndex);
 end
-
 
 figure;
 disp(['Predicted emotion: ', predictedLabel]);

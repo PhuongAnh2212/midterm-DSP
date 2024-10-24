@@ -18,6 +18,7 @@ function mfccFeatures = preprocessAudioData(audioData, fs, windowLength)
 
     mfccFeatures = (mfccFeatures - mean(mfccFeatures, 1)) ./ std(mfccFeatures, [], 1);
 
+    
     disp(['Size of MFCC Features before mean: ', num2str(size(mfccFeatures))]);
 
     mfccFeatures = mean(mfccFeatures, 1);
